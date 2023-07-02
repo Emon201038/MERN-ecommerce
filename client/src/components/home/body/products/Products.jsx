@@ -17,6 +17,7 @@ const Products = () => {
     };
     fetchData();
   }, []);
+  const totalProduct = products.length;
 
   return (
     <div
@@ -27,7 +28,7 @@ const Products = () => {
       }}
     >
       {isLoading
-        ? Array.from({ length: 100 }).map((_, index) => (
+        ? Array.from({ length: totalProduct }).map((_, index) => (
             <ProductSkeleton key={index} />
           ))
         : products.map((product) => (
