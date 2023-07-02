@@ -1,0 +1,13 @@
+.formIn {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.cart {
+  margin-left: 20px;
+  width: 50px;
+  font-size: 20px;
+}
+.btn1 {
+  color: black;
+}
