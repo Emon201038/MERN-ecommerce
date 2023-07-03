@@ -40,9 +40,12 @@ const userSchema = new Schema(
     address: {
       type: String,
       required: [true, "User address is required"],
+      minLength: [3, "User address must be at least 3 characters"],
     },
     image: {
-      type: String,
+      type: Buffer,
+      contentType: String,
+      required: [true, "User image is required"],
       default: defaultImagePath,
     },
     isAdmin: {

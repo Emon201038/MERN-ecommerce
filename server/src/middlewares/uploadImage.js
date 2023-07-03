@@ -1,20 +1,23 @@
 const multer = require("multer");
-const path = require("path");
 
-const { fileDirectory } = require("../../secret");
+const { maxFileSize, allowedFileTypes } = require("../../secret");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, fileDirectory);
-  },
-  filename: function (req, file, cb) {
-    const extName = path.extname(file.originalname);
-    cb(
-      null,
-      Date.now() + "-" + file.originalname.replace(extName, "") + extName
-    );
-  },
+const storage = multer.memoryStorage();
+
+const fileFilter = (req, file, cb) => {
+  if (!file.mimetype.startsWith("image/")) {
+    cb(new Error("Only image files are allowed"), false);
+  }
+  if (file.size > maxFileSize) {
+    cb(new Error("File size exceeds the maximum limit"), false);
+  }
+  if (!allowedFileTypes.includes(file.mimetype)) {
+    cb(new Error("File type is not allowed"), false);
+  }
+  cb(null, true);
+};
+const upload = multer({
+  storage: storage,
+  fileFilter,
 });
-
-const upload = multer({ storage: storage });
 module.exports = upload;

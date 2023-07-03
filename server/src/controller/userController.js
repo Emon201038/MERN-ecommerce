@@ -98,8 +98,11 @@ const deleteUserById = async (req, res, next) => {
 
 const processRegister = async (req, res, next) => {
   try {
-    //destructuring user input and existing check
+    //destructuring user input
     const { name, email, password, phone, address } = req.body;
+
+    const imageBufferString = req.file.buffer.toString("base64");
+
     const userExists = await User.exists({ email: email });
     if (userExists) {
       throw createError(
@@ -116,6 +119,7 @@ const processRegister = async (req, res, next) => {
         password,
         phone,
         address,
+        image: imageBufferString,
       },
       jsonSecretKey,
       "10m"
@@ -131,7 +135,7 @@ const processRegister = async (req, res, next) => {
     };
     //sending email
     try {
-      //await sendEmailWithNodeMail(mailData);
+      await sendEmailWithNodeMail(mailData);
     } catch (Emailerror) {
       next(createError(500, "Failed to send email"));
       return;

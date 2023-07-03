@@ -8,7 +8,9 @@ const jsonSecretKey = process.env.JSON_SECRET_KEY || "2387eoiwhjgkljdvfns@#";
 const smtpUsername = process.env.SMTP_USERNAME || "";
 const smtpPassword = process.env.SMTP_PASSWORD || "";
 const clientUrl = process.env.CLIENT_URL || "";
-const fileDirectory = process.env.UPLOAD_FILE || "";
+const maxFileSize = Number(process.env.MAX_FILE_SIZE || 209715);
+const allowedFileTypes =
+  process.env.ALLOWED_FILE_TYPES || "['image/jpg','image/png','image/jpeg']";
 
 module.exports = {
   port,
@@ -18,5 +20,6 @@ module.exports = {
   smtpUsername,
   smtpPassword,
   clientUrl,
-  fileDirectory,
+  maxFileSize,
+  allowedFileTypes,
 };
