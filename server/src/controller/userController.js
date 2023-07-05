@@ -101,7 +101,17 @@ const processRegister = async (req, res, next) => {
     //destructuring user input
     const { name, email, password, phone, address } = req.body;
 
-    const imageBufferString = req.file.buffer.toString("base64");
+    const image = req.file;
+    if (!image) {
+      throw createError(400, "Image file is required. Please upload an image");
+    }
+    if (image.size >= 1024 * 1024 * 2) {
+      throw createError(
+        400,
+        "Image file is too big. Please upload an image within 2MB"
+      );
+    }
+    const imageBufferString = image.buffer.toString("base64");
 
     const userExists = await User.exists({ email: email });
     if (userExists) {
@@ -196,6 +206,51 @@ const activateUserAccount = async (req, res, next) => {
     next(error);
   }
 };
+const updateUserById = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const user = await findWithId(User, userId, options);
+
+    const updateOptions = { new: true, runValidators: true, context: "query" };
+    let updates = {};
+
+    //name email password phon image address
+    if (req.body.name) updates.name = req.body.name;
+    if (req.body.password) updates.password = req.body.password;
+    if (req.body.phone) updates.phone = req.body.phone;
+    if (req.body.address) updates.address = req.body.address;
+    const image = req.file;
+    if (image) {
+      if (image.size >= 1024 * 1024 * 2) {
+        throw createError(
+          400,
+          "Image file is too big. Please upload an image within 2MB"
+        );
+      }
+      updates.image = image.buffer.toString("base64");
+    }
+
+    //updating user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updates,
+      updateOptions
+    );
+
+    if (!updatedUser) {
+      throw createError(404, "User does not exist with this id");
+    }
+
+    //success response
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User was updated successfully",
+      payload: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   getUsers,
@@ -203,4 +258,5 @@ module.exports = {
   getUserById,
   deleteUserById,
   activateUserAccount,
+  updateUserById,
 };
