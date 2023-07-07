@@ -1,12 +1,14 @@
-const { jsonSecretKey, clientUrl } = require("../../secret");
+const createError = require("http-errors");
 const jwt = require("jsonwebtoken");
+const { successResponse } = require("./responseController");
+const createJSONWebToken = require("../helper/jsonWebToken");
+const bcrypt = require("bcryptjs");
+const User = require("../model/userModel");
+
+const { jsonSecretKey, clientUrl } = require("../../secret");
 const deleteImage = require("../helper/deleteImage");
 const sendEmailWithNodeMail = require("../helper/email");
-const createJSONWebToken = require("../helper/jsonWebToken");
-const User = require("../model/userModel");
 const findWithId = require("../services/findwithId");
-const { successResponse } = require("./responseController");
-const createError = require("http-errors");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -31,7 +33,7 @@ const getUsers = async (req, res, next) => {
     const options = { password: 0 };
 
     //searching user and set limit
-    const users = await User.find(filter, options)
+    const users = await User.find(filter)
       .limit(limit)
       .skip((page - 1) * limit);
 
@@ -185,12 +187,14 @@ const activateUserAccount = async (req, res, next) => {
       }
 
       //create user
-      await User.create(decoded);
+      const newItem = await User.create(decoded);
+      console.log(newItem);
 
       //success response
       return successResponse(res, {
         statusCode: 201,
         message: `user registered successfull`,
+        payload: newItem,
       });
     } catch (error) {
       //checking Possible error
@@ -208,8 +212,9 @@ const activateUserAccount = async (req, res, next) => {
 };
 const updateUserById = async (req, res, next) => {
   try {
+    const options = { password: 0 };
     const userId = req.params.id;
-    const user = await findWithId(User, userId, options);
+    await findWithId(User, userId, options);
 
     const updateOptions = { new: true, runValidators: true, context: "query" };
     let updates = {};
@@ -219,6 +224,15 @@ const updateUserById = async (req, res, next) => {
     if (req.body.password) updates.password = req.body.password;
     if (req.body.phone) updates.phone = req.body.phone;
     if (req.body.address) updates.address = req.body.address;
+
+    // for (let key in req.body) {
+    //   if (["name", "password", "phone", "address"].includes(key)) {
+    //     updates[key] = req.body[key];
+    //   } else if (["email"]) {
+    //     throw createError(404, "email cannot be updated");
+    //   }
+    // }
+
     const image = req.file;
     if (image) {
       if (image.size >= 1024 * 1024 * 2) {
@@ -235,7 +249,7 @@ const updateUserById = async (req, res, next) => {
       userId,
       updates,
       updateOptions
-    );
+    ).select("-password");
 
     if (!updatedUser) {
       throw createError(404, "User does not exist with this id");

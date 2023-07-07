@@ -11,6 +11,7 @@ const clientUrl = process.env.CLIENT_URL || "";
 const maxFileSize = Number(process.env.MAX_FILE_SIZE || 209715);
 const allowedFileTypes =
   process.env.ALLOWED_FILE_TYPES || "['image/jpg','image/png','image/jpeg']";
+const jwtAccessKey = process.env.JWT_ACCESS_KEY || "wetdkjhfglkjdf";
 
 module.exports = {
   port,
@@ -22,4 +23,5 @@ module.exports = {
   clientUrl,
   maxFileSize,
   allowedFileTypes,
+  jwtAccessKey,
 };

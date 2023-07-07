@@ -1,12 +1,15 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const userRouter = require("./src/router/userRouter");
 const seedRouter = require("./src/router/seedRouter");
 const cors = require("cors");
+const authRouter = require("./src/router/authRouter");
 
 const app = express();
 
+app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -17,6 +20,7 @@ app.use(
 );
 
 app.use("/api/users", userRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/users", seedRouter);
 
 app.get("/", (req, res) => {
