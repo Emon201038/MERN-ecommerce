@@ -1,5 +1,4 @@
 const createError = require("http-errors");
-const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 
 const User = require("../model/userModel");

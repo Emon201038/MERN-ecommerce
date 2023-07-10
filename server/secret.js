@@ -14,14 +14,6 @@ const smtpPassword = process.env.SMTP_PASSWORD || "kmnqctitymszorwr";
 
 const clientUrl = process.env.CLIENT_URL;
 
-const maxFileSize = process.env.MAX_FILE_SIZE;
-
-const allowedFileTypes = process.env.ALLOWED_FILE_TYPES || [
-  "jpg",
-  "png",
-  "jpeg",
-];
-
 module.exports = {
   port,
   dbUrl,
@@ -29,6 +21,4 @@ module.exports = {
   smtpUserName,
   smtpPassword,
   clientUrl,
-  maxFileSize,
-  allowedFileTypes,
 };

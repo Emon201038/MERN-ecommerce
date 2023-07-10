@@ -1,13 +1,15 @@
 const multer = require("multer");
 const path = require("path");
 const createError = require("http-errors");
-const { allowedFileTypes, maxFileSize } = require("../../secret");
-
-const uploadDir = "public/images/users";
+const {
+  UPLOAD_USER_IMAGE_DIRECTORY,
+  ALLOWED_FILE_TYPES,
+  MAX_FILE_SIZE,
+} = require("../config");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, uploadDir);
+    cb(null, UPLOAD_USER_IMAGE_DIRECTORY);
   },
   filename: function (req, file, cb) {
     const extname = path.extname(file.originalname);
@@ -20,15 +22,15 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const extname = path.extname(file.originalname);
-  if (!allowedFileTypes.includes(extname.substring(1))) {
-    return cb(createError(400, "File type not allowed"));
+  if (!ALLOWED_FILE_TYPES.includes(extname.substring(1))) {
+    return cb(new Error("File type not allowed"));
   }
   cb(null, true);
 };
 
 const upload = multer({
   storage: storage,
-  limits: { fieldSize: maxFileSize },
+  limits: { fieldSize: MAX_FILE_SIZE },
   fileFilter,
 });
 
