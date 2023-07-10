@@ -4,16 +4,30 @@ const { jwtAccessKey } = require("../../secret");
 
 const isLoggedIn = async (req, res, next) => {
   try {
-    const token = req.cookies.accessToken;
-    if (!token) {
-      throw createError(404, "access token not found");
+    const accessToken = req.cookies.accessToken;
+    if (!accessToken) {
+      throw createError(404, "access token not found. Please log in.");
     }
-    const decoded = jwt.verify(token, jwtAccessKey);
+    const decoded = jwt.verify(accessToken, jwtAccessKey);
     if (!decoded) {
-      throw createError(404, "Invalid access token");
+      throw createError(404, "Invalid access token. Please log in again.");
     }
     req.body.userId = decoded._id;
+    next();
   } catch (error) {
     return next(error);
   }
 };
+
+const isLoggedOut = async (req, res, next) => {
+  try {
+    const accessToken = req.cookies.accessToken;
+    if (accessToken) {
+      throw createError(404, "User already logged in.");
+    }
+    next();
+  } catch (error) {
+    return next(error);
+  }
+};
+module.exports = { isLoggedIn, isLoggedOut };

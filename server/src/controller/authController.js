@@ -37,11 +37,7 @@ const handleLogIn = async (req, res, next) => {
     }
 
     //create jwt
-    const accessToken = createJSONWebToken(
-      { _id: user._id },
-      jwtAccessKey,
-      "10m"
-    );
+    const accessToken = createJSONWebToken({ user }, jwtAccessKey, "15m");
 
     //cookie
     res.cookie("accessToken", accessToken, {
@@ -65,7 +61,7 @@ const handleLogIn = async (req, res, next) => {
 //controller
 const handleLogOut = async (req, res, next) => {
   try {
-    res.clearCookie("access_token");
+    res.clearCookie("accessToken");
 
     //successResponse
     return successResponse(res, {

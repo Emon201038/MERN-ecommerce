@@ -21,7 +21,7 @@ app.use(
 
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
-app.use("/api/users", seedRouter);
+app.use("/api/seed", seedRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

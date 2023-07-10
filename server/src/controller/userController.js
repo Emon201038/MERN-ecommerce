@@ -60,18 +60,22 @@ const getUsers = async (req, res, next) => {
 };
 
 const getUserById = async (req, res, next) => {
-  const id = req.params.id;
-  const options = { password: 0 };
+  try {
+    const id = req.params.id;
+    const options = { password: 0 };
 
-  //finding user with respective id
-  const user = await findWithId(User, id, options);
+    //finding user with respective id
+    const user = await findWithId(User, id, options);
 
-  //success response
-  return successResponse(res, {
-    statusCode: 200,
-    message: "User found successfully",
-    payload: { user },
-  });
+    //success response
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User found successfully",
+      payload: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const deleteUserById = async (req, res, next) => {
@@ -174,7 +178,7 @@ const activateUserAccount = async (req, res, next) => {
       //verify token
       const decoded = jwt.verify(token, jsonSecretKey);
       if (!decoded) {
-        throw createError(404, "User is not able to verify");
+        throw createError(404, "User is unable to verify");
       }
 
       //user existing check
