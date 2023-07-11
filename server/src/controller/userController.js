@@ -224,18 +224,18 @@ const updateUserById = async (req, res, next) => {
     let updates = {};
 
     //name email password phon image address
-    if (req.body.name) updates.name = req.body.name;
-    if (req.body.password) updates.password = req.body.password;
-    if (req.body.phone) updates.phone = req.body.phone;
-    if (req.body.address) updates.address = req.body.address;
+    // if (req.body.name) updates.name = req.body.name;
+    // if (req.body.password) updates.password = req.body.password;
+    // if (req.body.phone) updates.phone = req.body.phone;
+    // if (req.body.address) updates.address = req.body.address;
 
-    // for (let key in req.body) {
-    //   if (["name", "password", "phone", "address"].includes(key)) {
-    //     updates[key] = req.body[key];
-    //   } else if (["email"]) {
-    //     throw createError(404, "email cannot be updated");
-    //   }
-    // }
+    for (let key in req.body) {
+      if (["name", "password", "phone", "address"].includes(key)) {
+        updates[key] = req.body[key];
+      } else if (["email"]) {
+        throw createError(404, "email cannot be updated");
+      }
+    }
 
     const image = req.file;
     if (image) {
@@ -270,6 +270,70 @@ const updateUserById = async (req, res, next) => {
   }
 };
 
+const handleBanUserById = async (req, res, next) => {
+  try {
+    const options = { password: 0 };
+    const userId = req.params.id;
+    await findWithId(User, userId, options);
+    const update = { isBanned: true };
+    const updateOptions = { new: true, runValidators: true, context: "query" };
+
+    //updating user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      update,
+      updateOptions
+    ).select("-password");
+
+    if (!updatedUser) {
+      throw createError(404, "User wat not banned");
+    }
+
+    //success response
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User was banned successfully",
+      payload: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleUnbannUserById = async (req, res, next) => {
+  try {
+    const options = { password: 0 };
+    const userId = req.params.id;
+    const user = await findWithId(User, userId, options);
+    const update = { isBanned: false };
+    const updateOptions = { new: true, runValidators: true, context: "query" };
+
+    if (!user.isBanned) {
+      throw createError(404, "User is not banned");
+    }
+
+    //updating user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      update,
+      updateOptions
+    ).select("-password");
+
+    if (!updatedUser) {
+      throw createError(404, "User wat not Unbanned");
+    }
+
+    //success response
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User was Unbanned successfully",
+      payload: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUsers,
   processRegister,
@@ -277,4 +341,6 @@ module.exports = {
   deleteUserById,
   activateUserAccount,
   updateUserById,
+  handleBanUserById,
+  handleUnbannUserById,
 };

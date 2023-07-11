@@ -33,9 +33,7 @@ const validateUserRegistration = [
   body("phone")
     .trim()
     .notEmpty()
-    .withMessage("Phone is required. Enter your phone")
-    .isLength({ min: 11 })
-    .withMessage("Phone length must be at least 11 characters"),
+    .withMessage("Phone is required. Enter your phone"),
   body("image")
     .custom((value, { req }) => {
       if (!req.file || !req.file.buffer) {
@@ -45,4 +43,24 @@ const validateUserRegistration = [
     })
     .withMessage("Image is required. Please upload an image"),
 ];
-module.exports = validateUserRegistration;
+
+const validateUserLogIn = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required. Enter your email address")
+    .isEmail()
+    .withMessage("Invalid email address"),
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Password is required.Enter your password")
+    .isLength({ min: 6 })
+    .withMessage("Password length must be at least 6 characters")
+    .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{6,}$/)
+    .withMessage(
+      "Password should contain a lowercase letter, uppercase letter,a numerical character and a special character"
+    ),
+];
+
+module.exports = { validateUserRegistration, validateUserLogIn };

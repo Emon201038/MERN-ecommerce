@@ -6,11 +6,13 @@ const {
   deleteUserById,
   activateUserAccount,
   updateUserById,
+  handleBanUserById,
+  handleUnbannUserById,
 } = require("../controller/userController");
 const upload = require("../middlewares/uploadImage");
-const validateUserRegistration = require("../validators/auth");
+const { validateUserRegistration } = require("../validators/auth");
 const runValidation = require("../validators");
-const { isLoggedIn, isLoggedOut } = require("../middlewares/auth");
+const { isLoggedIn, isLoggedOut, isAdmin } = require("../middlewares/auth");
 const userRouter = express.Router();
 
 userRouter.post(
@@ -21,9 +23,11 @@ userRouter.post(
   processRegister
 );
 userRouter.post("/activate", isLoggedOut, activateUserAccount);
-userRouter.get("/", getUsers);
-userRouter.get("/:id", getUserById);
+userRouter.get("/", isLoggedIn, isAdmin, getUsers);
+userRouter.get("/:id", isLoggedIn, getUserById);
 userRouter.delete("/:id", isLoggedIn, deleteUserById);
 userRouter.put("/:id", upload.single("image"), isLoggedIn, updateUserById);
+userRouter.put("/ban-user/:id", isLoggedIn, isAdmin, handleBanUserById);
+userRouter.put("/unban-user/:id", isLoggedIn, isAdmin, handleUnbannUserById);
 
 module.exports = userRouter;

@@ -1,4 +1,5 @@
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
@@ -9,6 +10,13 @@ const authRouter = require("./src/router/authRouter");
 
 const app = express();
 
+const rateLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 5,
+  message: "Too many requests from this ip. Please try again.",
+});
+
+app.use(rateLimiter);
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(bodyParser.json());
