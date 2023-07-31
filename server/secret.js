@@ -12,6 +12,9 @@ const maxFileSize = Number(process.env.MAX_FILE_SIZE || 209715);
 const allowedFileTypes =
   process.env.ALLOWED_FILE_TYPES || "['image/jpg','image/png','image/jpeg']";
 const jwtAccessKey = process.env.JWT_ACCESS_KEY || "wetdkjhfglkjdf";
+const jwtRefreshKey = process.env.JWT_REFRESH_KEY || "SDFGTDFHGDFgdsgsd";
+const jwtResetPasswordKey =
+  process.env.JWT_RESTE_PASSWORD_KEY || "wpoiefgjjnc;sdldkwoieped";
 
 module.exports = {
   port,
@@ -24,4 +27,6 @@ module.exports = {
   maxFileSize,
   allowedFileTypes,
   jwtAccessKey,
+  jwtResetPasswordKey,
+  jwtRefreshKey,
 };

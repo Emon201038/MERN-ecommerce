@@ -1,16 +1,20 @@
 const createError = require("http-errors");
 const jwt = require("jsonwebtoken");
+
 const { successResponse } = require("./responseController");
 const createJSONWebToken = require("../helper/jsonWebToken");
 const bcrypt = require("bcryptjs");
 const User = require("../model/userModel");
-
-const { jsonSecretKey, clientUrl } = require("../../secret");
+const {
+  jsonSecretKey,
+  clientUrl,
+  jwtResetPasswordKey,
+} = require("../../secret");
 const deleteImage = require("../helper/deleteImage");
 const sendEmailWithNodeMail = require("../helper/email");
 const findWithId = require("../services/findwithId");
 
-const getUsers = async (req, res, next) => {
+const handleGetUsers = async (req, res, next) => {
   try {
     const search = req.query.search || "";
     const page = Number(req.query.page) || 1;
@@ -38,7 +42,10 @@ const getUsers = async (req, res, next) => {
       .skip((page - 1) * limit);
 
     //counting total documents in database
-    const count = await User.find(filter).countDocuments();
+    const count = await User.find(filter, options).countDocuments();
+    
+    if (!users || users.length === 0) throw createError(404, "User not found")
+
 
     //success response
     return successResponse(res, {
@@ -59,7 +66,7 @@ const getUsers = async (req, res, next) => {
   }
 };
 
-const getUserById = async (req, res, next) => {
+const handleGetUserById = async (req, res, next) => {
   try {
     const id = req.params.id;
     const options = { password: 0 };
@@ -78,7 +85,7 @@ const getUserById = async (req, res, next) => {
   }
 };
 
-const deleteUserById = async (req, res, next) => {
+const handleDeleteUserById = async (req, res, next) => {
   try {
     const id = req.params.id;
     const options = { password: 0 };
@@ -102,7 +109,7 @@ const deleteUserById = async (req, res, next) => {
   }
 };
 
-const processRegister = async (req, res, next) => {
+const handleProcessRegister = async (req, res, next) => {
   try {
     //destructuring user input
     const { name, email, password, phone, address } = req.body;
@@ -161,14 +168,14 @@ const processRegister = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 200,
       message: `Please go to your ${email} to activate your account`,
-      payload: { token },
+      payload: {  },
     });
   } catch (error) {
     next(error);
   }
 };
 
-const activateUserAccount = async (req, res, next) => {
+const handleActivateUserAccount = async (req, res, next) => {
   try {
     const token = req.body.token;
     if (!token) {
@@ -214,7 +221,7 @@ const activateUserAccount = async (req, res, next) => {
     next(error);
   }
 };
-const updateUserById = async (req, res, next) => {
+const handleUpdateUserById = async (req, res, next) => {
   try {
     const options = { password: 0 };
     const userId = req.params.id;
@@ -229,10 +236,11 @@ const updateUserById = async (req, res, next) => {
     // if (req.body.phone) updates.phone = req.body.phone;
     // if (req.body.address) updates.address = req.body.address;
 
-    for (let key in req.body) {
-      if (["name", "password", "phone", "address"].includes(key)) {
+    const allowedFields = ["name", "password", "phone", "address"]
+    for (const key in req.body) {
+      if (allowedFields.includes(key)) {
         updates[key] = req.body[key];
-      } else if (["email"]) {
+      } else if (key === 'email') {
         throw createError(404, "email cannot be updated");
       }
     }
@@ -334,13 +342,124 @@ const handleUnbannUserById = async (req, res, next) => {
   }
 };
 
+const handleUpdatePassword = async (req, res, next) => {
+  try {
+    const {oldPassword, newPassword} = req.body;
+    const userId = req.params.id;
+    const user = await findWithId(User, userId);
+
+    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordMatch) {
+      throw createError(403, "Old password is incorrect.");
+    }
+;
+    const update = { $set: { password: newPassword } };
+    const updateOptions = { new: true };
+
+    //updating user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      update,
+      updateOptions
+    ).select("-password");
+
+    if (!updatedUser) {
+      throw createError(404, "User wat not Updated.");
+    }
+
+    //success response
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User password updated successfully",
+      payload: { updatedUser },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleForgetPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const userData = await User.findOne({ email: email });
+    if (!userData) {
+      throw createError(
+        404,
+        "Email is incorrect or you have not verified your email. Please register your account."
+      );
+    }
+    //create jwt
+    const token = createJSONWebToken({ email }, jwtResetPasswordKey, "10m");
+    //prepare email
+    const mailData = {
+      email,
+      subject: "Reset Password mail",
+      html: `<h2>Hello ${userData.name} !</h2>
+      <p>Please click on the link to<a href="${clientUrl}/api/user/reset-password/${token}" target="_blank"> reset your password. </a></p>
+      `,
+    };
+    try {
+      await sendEmailWithNodeMail(mailData);
+    } catch (Emailerror) {
+      next(createError(500, "Failed to send to send reset password email"));
+      return;
+    }
+
+    //success response
+    return successResponse(res, {
+      statusCode: 200,
+      message: `Please go to your ${email} to reset your password .`,
+      payload: token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleResetPassword = async (req, res, next) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    const decoded = jwt.verify(token, jwtResetPasswordKey);
+
+    if (!decoded) {
+      throw createError(400, "Invalid or expired token.");
+    }
+
+    const filter = { email: decoded.email };
+    const update = { password: newPassword };
+    const updateOption = { new: true };
+
+    //updating user
+    const updatedUser = await User.findOneAndUpdate(
+      filter,
+      update,
+      updateOption
+    ).select("-password");
+
+    if (!updatedUser) {
+      throw createError(404, "Password reset failed.");
+    }
+    //success response
+    return successResponse(res, {
+      statusCode: 200,
+      message: `Password reset successfully .`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
-  getUsers,
-  processRegister,
-  getUserById,
-  deleteUserById,
-  activateUserAccount,
-  updateUserById,
+  handleGetUsers,
+  handleProcessRegister,
+  handleGetUserById,
+  handleDeleteUserById,
+  handleActivateUserAccount,
+  handleUpdateUserById,
   handleBanUserById,
   handleUnbannUserById,
+  handleUpdatePassword,
+  handleForgetPassword,
+  handleResetPassword,
 };
