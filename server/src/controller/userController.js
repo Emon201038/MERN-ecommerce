@@ -13,6 +13,8 @@ const {
 const deleteImage = require("../helper/deleteImage");
 const sendEmailWithNodeMail = require("../helper/email");
 const findWithId = require("../services/findwithId");
+const checkUserExist = require("../helper/checkUserExist");
+const sendEmail = require("../helper/sendEmail");
 
 const handleGetUsers = async (req, res, next) => {
   try {
@@ -126,7 +128,7 @@ const handleProcessRegister = async (req, res, next) => {
     }
     const imageBufferString = image.buffer.toString("base64");
 
-    const userExists = await User.exists({ email: email });
+    const userExists = await checkUserExist(email)
     if (userExists) {
       throw createError(
         409,
@@ -156,13 +158,8 @@ const handleProcessRegister = async (req, res, next) => {
       <p>Please click on the link to<a href="${clientUrl}/activate/${token}" target="_blank"> activate your account</a></p>
       `,
     };
-    //sending email
-    try {
-      await sendEmailWithNodeMail(mailData);
-    } catch (Emailerror) {
-      next(createError(500, "Failed to send email"));
-      return;
-    }
+    //sending email with nodeMailer
+    await sendEmail(mailData)
 
     //success response
     return successResponse(res, {
@@ -398,13 +395,7 @@ const handleForgetPassword = async (req, res, next) => {
       <p>Please click on the link to<a href="${clientUrl}/api/user/reset-password/${token}" target="_blank"> reset your password. </a></p>
       `,
     };
-    try {
-      await sendEmailWithNodeMail(mailData);
-    } catch (Emailerror) {
-      next(createError(500, "Failed to send to send reset password email"));
-      return;
-    }
-
+    await sendEmail(mailData)
     //success response
     return successResponse(res, {
       statusCode: 200,

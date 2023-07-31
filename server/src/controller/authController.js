@@ -6,6 +6,7 @@ const { successResponse } = require("./responseController");
 const createJSONWebToken = require("../helper/jsonWebToken");
 const User = require("../model/userModel");
 const { jwtAccessKey, jwtRefreshKey } = require("../../secret");
+const { setAccessTokenCookie, setRefreshTokenCookie } = require("../helper/cookie");
 
 //controller
 const handleLogIn = async (req, res, next) => {
@@ -35,22 +36,15 @@ const handleLogIn = async (req, res, next) => {
     //create jwt
     const accessToken = createJSONWebToken({ user }, jwtAccessKey, "15m");
 
-    //cookie
-    res.cookie("accessToken", accessToken, {
-      maxAge: 15 * 60 * 1000, //15 minutes
-      httpOnly: true,
-      sameSite: "none",
-    });
+    //access cookie
+    setAccessTokenCookie(res,accessToken)
+    
     //refresh token
     const refreshToken = createJSONWebToken({ user }, jwtRefreshKey, "7d");
 
     //refresh cookie
-    res.cookie("refreshToken", refreshToken, {
-      maxAge: 7 * 24 * 60 * 60 * 1000, //7 days
-      httpOnly: true,
-      sameSite: "none",
-    });
-
+    setRefreshTokenCookie(res,refreshToken)
+    
     const userWithoutPassword = await User.findOne({ email }).select(
       "-password"
     );
@@ -100,12 +94,8 @@ const handleRefreshToken = async (req, res, next) => {
     const accessToken = createJSONWebToken(decodedToken.user, jwtAccessKey, "15m");
 
     //cookie
-    res.cookie("accessToken", accessToken, {
-      maxAge: 15 * 60 * 1000, //15 minutes
-      httpOnly: true,
-      sameSite: "none",
-    });
-
+    setAccessTokenCookie(res,accessToken)
+     
     //successResponse
     return successResponse(res, {
       statusCode: 200,

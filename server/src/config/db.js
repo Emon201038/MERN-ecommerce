@@ -1,16 +1,17 @@
 const mongoose = require("mongoose");
 const { dbUrl } = require("../../secret");
+const logger = require("../controller/loggerController");
 
 const connectDb = async () => {
   try {
     mongoose.connect(dbUrl).then(() => {
-      console.log("Connected to DB is successful");
+      logger.log('info',"Connected to DB is successful");
     });
     mongoose.connection.on("error", (err) => {
-      console.log("DB connection error", err);
+      logger.log('error',"DB connection error", err);
     });
   } catch (error) {
-    console.error(error);
+    logger.log('error',error);
   }
 };
 
