@@ -1,5 +1,4 @@
 const { Schema, model } = require("mongoose");
-const slug = require('slugify')
 
 const categorySchema = new Schema(
   {
@@ -16,7 +15,6 @@ const categorySchema = new Schema(
       unique: true,
       lowercase: true,
     },
-    
   },
   { timestamps: true }
 );
