@@ -14,10 +14,11 @@ const categorySchema = new Schema(
       required: [true, "Slug name is required"],
       unique: true,
       lowercase: true,
+      trim: true,
     },
   },
   { timestamps: true }
 );
-const Category = model("category", categorySchema);
+const Category = model("Category", categorySchema);
 
 module.exports = Category;

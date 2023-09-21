@@ -8,6 +8,7 @@ const seedRouter = require("./src/router/seedRouter");
 const cors = require("cors");
 const authRouter = require("./src/router/authRouter");
 const categoryRouter = require("./src/router/categoryRouter");
+const productRouter = require("./src/router/productRouter");
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/seed", seedRouter);
 app.use("/api/category", categoryRouter);
+app.use("/api/product", productRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

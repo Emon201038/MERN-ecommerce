@@ -45,9 +45,8 @@ const handleGetUsers = async (req, res, next) => {
 
     //counting total documents in database
     const count = await User.find(filter, options).countDocuments();
-    
-    if (!users || users.length === 0) throw createError(404, "User not found")
 
+    if (!users || users.length === 0) throw createError(404, "User not found");
 
     //success response
     return successResponse(res, {
@@ -128,7 +127,7 @@ const handleProcessRegister = async (req, res, next) => {
     }
     const imageBufferString = image.buffer.toString("base64");
 
-    const userExists = await checkUserExist(email)
+    const userExists = await checkUserExist(email);
     if (userExists) {
       throw createError(
         409,
@@ -159,13 +158,13 @@ const handleProcessRegister = async (req, res, next) => {
       `,
     };
     //sending email with nodeMailer
-    await sendEmail(mailData)
+    await sendEmail(mailData);
 
     //success response
     return successResponse(res, {
       statusCode: 200,
       message: `Please go to your ${email} to activate your account`,
-      payload: {  },
+      payload: {},
     });
   } catch (error) {
     next(error);
@@ -233,11 +232,11 @@ const handleUpdateUserById = async (req, res, next) => {
     // if (req.body.phone) updates.phone = req.body.phone;
     // if (req.body.address) updates.address = req.body.address;
 
-    const allowedFields = ["name", "password", "phone", "address"]
+    const allowedFields = ["name", "password", "phone", "address"];
     for (const key in req.body) {
       if (allowedFields.includes(key)) {
         updates[key] = req.body[key];
-      } else if (key === 'email') {
+      } else if (key === "email") {
         throw createError(404, "email cannot be updated");
       }
     }
@@ -341,7 +340,7 @@ const handleUnbannUserById = async (req, res, next) => {
 
 const handleUpdatePassword = async (req, res, next) => {
   try {
-    const {oldPassword, newPassword} = req.body;
+    const { oldPassword, newPassword } = req.body;
     const userId = req.params.id;
     const user = await findWithId(User, userId);
 
@@ -349,7 +348,6 @@ const handleUpdatePassword = async (req, res, next) => {
     if (!isPasswordMatch) {
       throw createError(403, "Old password is incorrect.");
     }
-;
     const update = { $set: { password: newPassword } };
     const updateOptions = { new: true };
 
@@ -395,7 +393,7 @@ const handleForgetPassword = async (req, res, next) => {
       <p>Please click on the link to<a href="${clientUrl}/api/user/reset-password/${token}" target="_blank"> reset your password. </a></p>
       `,
     };
-    await sendEmail(mailData)
+    await sendEmail(mailData);
     //success response
     return successResponse(res, {
       statusCode: 200,
