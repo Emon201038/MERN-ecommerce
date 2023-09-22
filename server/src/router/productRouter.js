@@ -4,6 +4,7 @@ const {
   handleGetProducts,
   handleGetProduct,
   handleDeleteProduct,
+  handleUpdateProductBySlug,
 } = require("../controller/productController");
 const upload = require("../middlewares/uploadImage");
 const { validateProduct } = require("../validators/products");
@@ -31,5 +32,8 @@ productRouter.get("/:slug", handleGetProduct);
 
 //DELETE -> /api/products
 productRouter.delete("/:slug", isLoggedIn, isAdmin, handleDeleteProduct);
+
+//UPDATE -> /api/product
+productRouter.put("/:slug", isLoggedIn, isAdmin, handleUpdateProductBySlug);
 
 module.exports = productRouter;

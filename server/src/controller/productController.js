@@ -6,7 +6,9 @@ const {
   getProducts,
   getProduct,
   deleteProductBySlug,
+  updateProduct,
 } = require("../services/productService");
+const { default: slugify } = require("slugify");
 
 const handleCreateProduct = async (req, res, next) => {
   try {
@@ -50,10 +52,19 @@ const handleCreateProduct = async (req, res, next) => {
 
 const handleGetProducts = async (req, res, next) => {
   try {
+    const search = req.query.search || "";
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
 
-    const productsData = await getProducts(page, limit);
+    //search regular expression
+    const searchRegExp = new RegExp(".*" + search + ".*", "i");
+
+    //filtering search results
+    const filter = {
+      $or: [{ name: { $regex: searchRegExp } }],
+    };
+
+    const productsData = await getProducts(page, limit, filter);
     const { products, count, totalPages, currentPage } = productsData;
 
     //success response
@@ -78,8 +89,9 @@ const handleGetProducts = async (req, res, next) => {
 
 const handleGetProduct = async (req, res, next) => {
   try {
-    const { slug } = req.params;
+    const slug = req.params.slug;
     const product = await getProduct(slug);
+
     //success response
     return successResponse(res, {
       statusCode: 200,
@@ -93,12 +105,61 @@ const handleGetProduct = async (req, res, next) => {
 
 const handleDeleteProduct = async (req, res, next) => {
   try {
+    const slug = req.params.slug;
     const product = await deleteProductBySlug(slug);
     //success response
     return successResponse(res, {
       statusCode: 200,
       message: `${product.name} Product has been deleted successfully`,
-      payload: { product },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleUpdateProductBySlug = async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    const image = req.file;
+
+    const updateOptions = { new: true, runValidators: true, context: "query" };
+    let updates = {};
+
+    //name email password phon image address
+    // if (req.body.name) updates.name = req.body.name;
+    // if (req.body.password) updates.password = req.body.password;
+    // if (req.body.phone) updates.phone = req.body.phone;
+    // if (req.body.address) updates.address = req.body.address;
+
+    const allowedFields = [
+      "name",
+      "description",
+      "price",
+      "quantity",
+      "sold",
+      "shipping",
+      "category",
+    ];
+    for (const key in req.body) {
+      if (allowedFields.includes(key)) {
+        updates[key] = req.body[key];
+      }
+    }
+    const updatedProduct = await updateProduct(
+      slug,
+      updates,
+      image,
+      updateOptions
+    );
+    if (!updatedProduct) {
+      throw createError(404, "Product does not exist with this name");
+    }
+
+    //success response
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Product was updated successfully",
+      payload: updatedProduct,
     });
   } catch (error) {
     next(error);
@@ -110,4 +171,5 @@ module.exports = {
   handleGetProducts,
   handleGetProduct,
   handleDeleteProduct,
+  handleUpdateProductBySlug,
 };

@@ -1,4 +1,5 @@
 const slugify = require("slugify");
+const createError = require("http-errors");
 
 const Product = require("../model/productModel");
 
@@ -35,8 +36,8 @@ const createProduct = async (productDetails) => {
   return product;
 };
 
-const getProducts = async (page = 1, limit = 4) => {
-  const products = await Product.find({})
+const getProducts = async (page = 1, limit = 4, filter = {}) => {
+  const products = await Product.find(filter)
     .populate("category")
     .skip((page - 1) * limit)
     .limit(limit)
@@ -45,7 +46,7 @@ const getProducts = async (page = 1, limit = 4) => {
   if (!products) {
     throw createError(404, "No products found");
   }
-  const count = await Product.find({}).countDocuments();
+  const count = await Product.find(filter).countDocuments();
   return {
     products,
     count,
@@ -71,9 +72,35 @@ const deleteProductBySlug = async (slug) => {
   return product;
 };
 
+const updateProduct = async (slug, updates, image, updateOptions) => {
+  if (updates.name) {
+    updates.slug = slugify(updates.name);
+  }
+
+  if (image) {
+    if (image.size >= 1024 * 1024 * 2) {
+      throw createError(
+        400,
+        "Image file is too big. Please upload an image within 2MB"
+      );
+    }
+    updates.image = image.buffer.toString("base64");
+  }
+
+  //updating product
+  const updatedProduct = await Product.findOneAndUpdate(
+    { slug },
+    updates,
+    updateOptions
+  );
+
+  return updatedProduct;
+};
+
 module.exports = {
   createProduct,
   getProducts,
   getProduct,
   deleteProductBySlug,
+  updateProduct,
 };

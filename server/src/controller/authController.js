@@ -6,7 +6,10 @@ const { successResponse } = require("./responseController");
 const createJSONWebToken = require("../helper/jsonWebToken");
 const User = require("../model/userModel");
 const { jwtAccessKey, jwtRefreshKey } = require("../../secret");
-const { setAccessTokenCookie, setRefreshTokenCookie } = require("../helper/cookie");
+const {
+  setAccessTokenCookie,
+  setRefreshTokenCookie,
+} = require("../helper/cookie");
 
 //controller
 const handleLogIn = async (req, res, next) => {
@@ -22,7 +25,7 @@ const handleLogIn = async (req, res, next) => {
         "User not found with this email. Please register first."
       );
     }
-    
+
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
       throw createError(403, "Invalid password.Try with your actual password");
@@ -37,14 +40,14 @@ const handleLogIn = async (req, res, next) => {
     const accessToken = createJSONWebToken({ user }, jwtAccessKey, "15m");
 
     //access cookie
-    setAccessTokenCookie(res,accessToken)
-    
+    setAccessTokenCookie(res, accessToken);
+
     //refresh token
     const refreshToken = createJSONWebToken({ user }, jwtRefreshKey, "7d");
 
     //refresh cookie
-    setRefreshTokenCookie(res,refreshToken)
-    
+    setRefreshTokenCookie(res, refreshToken);
+
     const userWithoutPassword = await User.findOne({ email }).select(
       "-password"
     );
@@ -83,19 +86,22 @@ const handleRefreshToken = async (req, res, next) => {
 
     //verify Old Refresh Token
     const decodedToken = jwt.verify(oldRefreshToken, jwtRefreshKey);
-    
 
     if (!decodedToken) {
       throw createError(401, "Invalid refresh token. Please log in again.");
     }
     console.log(decodedToken.user);
-    
+
     //create jwt
-    const accessToken = createJSONWebToken(decodedToken.user, jwtAccessKey, "15m");
+    const accessToken = createJSONWebToken(
+      decodedToken.user,
+      jwtAccessKey,
+      "15m"
+    );
 
     //cookie
-    setAccessTokenCookie(res,accessToken)
-     
+    setAccessTokenCookie(res, accessToken);
+
     //successResponse
     return successResponse(res, {
       statusCode: 200,
