@@ -1,0 +1,27 @@
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  phone     String
+  password  String
+  fullName  String
+  avatar    String?
+  role      UserRole @default(BUYER)
+  isDeleted Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //relations
+  products  Product[]
+  addresses Address[]
+  carts     Cart[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+  BUYER
+  SELLER
+}

@@ -1,0 +1,25 @@
+model Address {
+  id         String       @id @default(uuid())
+  userId     String
+  phone      String
+  name       String
+  line1      String
+  line2      String?
+  label      AddressLabel
+  city       String
+  state      String
+  postalCode Int
+  isDefault  Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  //relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("addresses")
+}
+
+enum AddressLabel {
+  Home
+  Office
+}

@@ -1,0 +1,16 @@
+model Product {
+  id         String @id @default(uuid())
+  title      String
+  slug       String @unique
+  quantity   Int
+  price      Int
+  sellerId   String
+  categoryId String
+  cart       Cart[]
+
+  //relation
+  seller   User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("products ")
+}
