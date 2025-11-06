@@ -11,7 +11,7 @@
   "author": "Emon",
   "main": "/dist/server.js",
   "prisma": {
-    "schema": "./prisma/schema"
+    "schema": "prisma/schema"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -27,14 +27,17 @@
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
+    "@types/multer": "^2.0.0",
+    "@types/streamifier": "^0.1.2",
     "morgan": "^1.10.1",
-    "prisma": "^6.18.0",
+    "prisma": "^6.19.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@prisma/client": "^6.18.0",
+    "@prisma/client": "^6.19.0",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.8.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -42,6 +45,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
+    "streamifier": "^0.1.1",
     "zod": "^4.1.12"
   }
 }
