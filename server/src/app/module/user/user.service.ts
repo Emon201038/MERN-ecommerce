@@ -7,7 +7,6 @@ import { prisma } from "../../shared/prisma";
 import { ICreateUserInput } from "./user.interface";
 import { Request } from "express";
 import { uploadToCloudinary } from "../../helpers/uploadToCloudinary";
-import { IOptionsResult } from "../../helpers/calculatePagination";
 import { Prisma } from "@prisma/client";
 import { userSearchAbleFields } from "./user.constant";
 
