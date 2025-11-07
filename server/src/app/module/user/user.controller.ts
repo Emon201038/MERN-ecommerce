@@ -2,16 +2,21 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../shared/catchAsync";
 import { UserService } from "./user.service";
 import { sendResponse } from "../../shared/sendResponse";
+import { pick } from "../../helpers/pick";
+import { userFilterableFields } from "./user.constant";
 
 const getAllUser = catchAsync(
   async (req: Request, res: Response, _next: NextFunction) => {
-    const result = await UserService.getAllUser();
+    const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+    const filters = pick(req.query, userFilterableFields);
+    const result = await UserService.getAllUser(filters, options);
 
     sendResponse(res, {
       success: true,
       statusCode: 200,
       message: "User fetched successfully",
-      data: result,
+      meta: result.meta,
+      data: result.data,
     });
   }
 );
