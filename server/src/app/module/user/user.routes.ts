@@ -16,8 +16,10 @@ userRouter
     UserController.createUser
   )
   .get(
-    auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SELLER),
+    auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SELLER, UserRole.BUYER),
     UserController.getAllUser
   );
+
+userRouter.route("/:id").get(auth(), UserController.getSingleUser);
 
 export default userRouter;

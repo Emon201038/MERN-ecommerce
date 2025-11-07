@@ -78,4 +78,14 @@ const createUser = async (req: Request) => {
   return user;
 };
 
-export const UserService = { getAllUser, createUser };
+const getSingleUser = async (id: string) => {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: {
+      id,
+    },
+  });
+  const { password, ...rest } = user;
+  return rest;
+};
+
+export const UserService = { getAllUser, createUser, getSingleUser };

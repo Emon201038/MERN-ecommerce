@@ -32,4 +32,15 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const UserController = { getAllUser, createUser };
+const getSingleUser = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getSingleUser(req.params.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "User fetched successfully",
+    data: result,
+  });
+});
+
+export const UserController = { getAllUser, createUser, getSingleUser };
